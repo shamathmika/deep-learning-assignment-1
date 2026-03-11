@@ -839,6 +839,67 @@
             "requirements": {
                 "validation": "AUC/AP reported with deterministic sampling."
             }
+        },
+        {
+            "series": "Recommendation Systems",
+            "level": 1,
+            "id": "recsys_lvl1_matrix_factorization",
+            "algorithm": "Neural Matrix Factorization (NeuralMF)",
+            "description": "User-item rating prediction via nn.Embedding matrices with per-user/item bias terms. r_hat(u,i) = global_mean + b_u + b_i + U[u]·V[i]. Trained end-to-end with AdamW and MSELoss.",
+            "interface_protocol": "pytorch_task_v1",
+            "requirements": {
+                "math": "Docstring includes r_hat(u,i) = μ + b_u + b_i + U[u]·V[i] and MSE loss formula.",
+                "data": "Synthetic: 200 users, 100 items, ~5% observed ratings (values 1-5). 80/20 train/val split.",
+                "implementation": "nn.Module with nn.Embedding for user/item embeddings and bias terms. AdamW optimizer.",
+                "evaluation": "RMSE and MAE on validation ratings.",
+                "visualization": "Save recsys_lvl1_loss.png (training loss curve).",
+                "main_block": "Assert val RMSE < 1.0 and val MAE < 0.8. Exit 0 on success."
+            }
+        },
+        {
+            "series": "Recommendation Systems",
+            "level": 2,
+            "id": "recsys_lvl2_ncf",
+            "algorithm": "Neural Collaborative Filtering (NCF)",
+            "description": "User/item embeddings concatenated and passed through a 3-layer MLP to predict ratings. Compared against a dot-product baseline; NCF must outperform it on validation RMSE.",
+            "interface_protocol": "pytorch_task_v1",
+            "requirements": {
+                "data": "Synthetic: 500 users, 200 items, ~5% observed ratings with user/item biases. 80/20 split.",
+                "implementation": "nn.Embedding for users/items. 3-layer MLP (128→64→32→1) with Dropout. Adam optimizer.",
+                "evaluation": "RMSE and MAE on validation split. Compared against DotProductBaseline.",
+                "visualization": "Save recsys_lvl2_loss.png (NCF training loss curve).",
+                "main_block": "Assert val RMSE < 1.0 and NCF RMSE beats dot-product baseline. Exit 0 on success."
+            }
+        },
+        {
+            "series": "Recommendation Systems",
+            "level": 3,
+            "id": "recsys_lvl3_bpr",
+            "algorithm": "Bayesian Personalized Ranking (BPR) with Implicit Feedback",
+            "description": "Pairwise BPR loss on implicit feedback using triplet sampling. 2-layer MLP scorer on concatenated embeddings. Evaluated with ranking metrics Recall@10 and NDCG@10.",
+            "interface_protocol": "pytorch_task_v1",
+            "requirements": {
+                "data": "Synthetic implicit feedback: 500 users, 300 items, ~3% positive interactions. Per-user 80/20 split.",
+                "implementation": "nn.Embedding + 2-layer MLP scorer (128→64→1). BPR loss: -mean(log σ(r_pos - r_neg)). Triplet sampling.",
+                "evaluation": "Recall@10 and NDCG@10 on held-out interactions per user.",
+                "visualization": "Save recsys_lvl3_metrics.png (BPR training loss curve).",
+                "main_block": "Assert Recall@10 > 0.05 and NDCG@10 > 0.03. Exit 0 on success."
+            }
+        },
+        {
+            "series": "Recommendation Systems",
+            "level": 4,
+            "id": "recsys_lvl4_two_tower",
+            "algorithm": "Two-Tower Model with Contrastive Learning",
+            "description": "Separate MLP towers encode user and item features into a shared embedding space. Trained with InfoNCE loss and in-batch negatives. Item embeddings precomputed for fast ANN retrieval.",
+            "interface_protocol": "pytorch_task_v1",
+            "requirements": {
+                "data": "Synthetic: 1000 users (8 features), 500 items (8 features), ~5% implicit feedback. Per-user 80/20 split.",
+                "implementation": "Two MLP towers (8→64→64→64), L2-normalized output. InfoNCE loss with in-batch negatives. Precomputed item embeddings at inference.",
+                "evaluation": "Recall@10, NDCG@10, retrieval latency ms per query at 100/500/1000 items.",
+                "visualization": "Save recsys_lvl4_latency.png (retrieval latency vs catalogue size).",
+                "main_block": "Assert Recall@10 > 0.05 and max retrieval latency < 100ms. Exit 0 on success."
+            }
         }
     ]
 }
