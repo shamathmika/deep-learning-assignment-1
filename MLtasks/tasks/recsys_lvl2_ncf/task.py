@@ -189,11 +189,12 @@ def train(model, train_loader, cfg, device):
         for u_b, i_b, r_b in train_loader:
             u_b, i_b, r_b = u_b.to(device), i_b.to(device), r_b.to(device)
             optimizer.zero_grad()
-            criterion(model(u_b, i_b), r_b).backward()
+            loss = criterion(model(u_b, i_b), r_b)
+            loss.backward()
             optimizer.step()
-            total  += criterion(model(u_b, i_b).detach(), r_b).item()
+            total  += loss.item()
             n_bat  += 1
-        avg = total / n_bat
+        avg = total / n_bat if n_bat > 0 else 0.0
         loss_history.append(avg)
         if (epoch + 1) % 10 == 0:
             print(f"    Epoch [{epoch+1}/{epochs}]  MSE: {avg:.4f}")

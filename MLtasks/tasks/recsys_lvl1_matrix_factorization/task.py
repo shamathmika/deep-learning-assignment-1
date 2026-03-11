@@ -169,7 +169,7 @@ def build_model(cfg):
 
 def train(model, train_loader, cfg, device):
     """
-    Standard epoch loop with Adam + MSELoss.
+    Standard epoch loop with AdamW + MSELoss.
     Returns list of per-epoch training losses.
     """
     model.to(device)
@@ -193,7 +193,7 @@ def train(model, train_loader, cfg, device):
             optimizer.step()
             total  += loss.item()
             n_bat  += 1
-        avg = total / n_bat
+        avg = total / n_bat if n_bat > 0 else 0.0
         loss_history.append(avg)
         if (epoch + 1) % 10 == 0:
             print(f"    Epoch [{epoch+1}/{epochs}]  MSE: {avg:.4f}")
